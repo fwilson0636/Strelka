@@ -1,14 +1,17 @@
 from pprint import pprint
 
+#enabling the use of JPEG image functions
 from PIL import Image
 from PIL.ExifTags import TAGS, GPSTAGS
 
-# dictionary that will contain useful information
+# dictionary that will contain requested metadata
 jpeg_parsed = dict()
 
+#two different images files to compare the varying metadata fields
 jpeg_file = "Wikipedia-Logo-black-and-white.jpeg"
-jpeg_file = "DSCN0025.jpeg"
+#jpeg_file = "DSCN0025.jpeg"
 
+#begins the process of reading and parsing metadata
 image = Image.open(jpeg_file)
 
 exifdata = image._getexif()
@@ -19,39 +22,7 @@ for tag, value in exifdata.items():
     decoded = TAGS.get(tag, tag)
     exif_table[decoded] = value
 
-#gps_info = dict()
-
-if "GPSInfo" in exif_table:
-    for key in exif_table['GPSInfo'].keys():
-        decode = GPSTAGS.get(key, key)
-        #gps_info[decode] = exif_table['GPSInfo'][key]
-
-    # print out GPS information
-    # pprint(gps_info)
-    # short hand for merging two python dictionaries, may only work on python3.7+?
-    #jpeg_parsed = {**gps_info, **jpeg_parsed}
-
-# print out general information
-# pprint(exif_table)
-
-# getting height / width
-height, width = image.size
-jpeg_parsed["image_height"] = height
-jpeg_parsed["image_width"] = width
-
-# get colors
-color_count = image.getcolors()
-
-if color_count:
-    jpeg_parsed["is_grayscale"] = True
-    #print("grayscale image found")
-else:
-    jpeg_parsed["is_grayscale"] = False
-    #print("color image found")
-
-print(jpeg_parsed)
-
-temp = dict()
+    temp = dict()
 # iterating over all EXIF data fields
 for tag_id in exifdata:
     # get the tag name, instead of human unreadable tag id
@@ -60,6 +31,7 @@ for tag_id in exifdata:
     temp[tag] = data
     # decode bytes
 
+#
 try:
     # Reading from file
     filename = "fields.txt"
@@ -71,7 +43,7 @@ try:
     fields_list: list = list()
 
     with open(filename, 'r') as fp:
-        print("using with statement...")
+        print("the image used resulted in...")
 
         for field in fp:
             fields.add(field.strip())
