@@ -1,20 +1,22 @@
-GPSInfo
-ExifImageHeight
-ExifImageWidth
-ExifVersion
-Make
-Model
-Software
-UserComment
-DateTime
-SecurityClassification
-ExpandSoftware
-Saturation
-ImageHistory
-ImageNumber
-Pressure
-FlashEnergy
-Noise
-ImageNumber
-LensMake
+[
+    "GPSInfo",
+    "ExifImageHeight",
+    "ExifImageWidth",
+    "ExifVersion",
+    "Make",
+    "Model",
+    "Software",
+    "UserComment",
+    "DateTime",
+    "SecurityClassification",
+    "ExpandSoftware",
+    "Saturation",
+    "ImageHistory",
+    "ImageNumber",
+    "Pressure",
+    "FlashEnergy",
+    "Noise",
+    "ImageNumber",
+    "LensMake"
+]
 
