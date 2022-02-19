@@ -1,8 +1,6 @@
-from pprint import pprint
-
 #enabling the use of JPEG image functions
 from PIL import Image
-from PIL.ExifTags import TAGS, GPSTAGS
+from PIL.ExifTags import TAGS
 
 # dictionary that will contain requested metadata
 jpeg_parsed = dict()
