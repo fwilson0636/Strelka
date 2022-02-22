@@ -1,2 +1,2 @@
 class Scanner:
-    pass
+    tags = []
