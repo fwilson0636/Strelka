@@ -1,7 +1,8 @@
 from sys import argv
 from PIL import Image
 from PIL.ExifTags import TAGS
-import os.path
+from strelka.strelka import Scanner
+import json
 
 
 def parse_jpeg_from_path(path: str) -> dict:
@@ -16,27 +17,28 @@ def parse_jpeg_from_path(path: str) -> dict:
     # 3. If it does , open the file and extract contents
     # 4. Call `parse_jpeg_from_data` with contents
     # 5. Return results of function call
+    jpeg_scanner = Scanner()
+    jpeg_data = dict()
 
-    file_exists = os.path.exists(path)
-
-    if file_exists:
-        # print(file_exists)
+    try:
         # begins the process of reading and parsing metadata
         image = Image.open(path)
-
         exifdata = image._getexif()
-
-        parse_jpeg_from_data(exifdata)
+        jpeg_data = parse_jpeg_from_data(exifdata)
+    except OSError as ose:
+        print("Found OSError", ose)
+        jpeg_scanner.tags.append("File does not exist")
+    except Exception as e:
+        print("Found exception", e)
+        jpeg_scanner.tags.append(e)
     else:
-        raise Exception("Invalid path")
+        print("Success")
+    finally:
+        print("Completed")
 
-    # try:
-    #     if file_exists:
-    #         print(file_exists)
-    # except:
-    #     ErrorHandling.PathError
+    # print("Scanner errors:", jpeg_scanner.tags)
+    return jpeg_data
 
-    # return dict()
 
 def parse_jpeg_from_data(data: bytes) -> dict:
     """
@@ -45,6 +47,7 @@ def parse_jpeg_from_data(data: bytes) -> dict:
     :return: returns a python dictionary that contains metadata
     """
     # fields are currently case sensitive
+    # TODO: make fields case sensitive
     desired_fields = [
         "GPSInfo",
         "ExifImageHeight",
@@ -79,30 +82,32 @@ def parse_jpeg_from_data(data: bytes) -> dict:
         exif_table[decoded] = value
 
         temp = dict()
+
     # iterating over all EXIF data fields
     for tag_id in data:
         # get the tag name, instead of human unreadable tag id
         tag = TAGS.get(tag_id, tag_id)
         readable_data = data.get(tag_id)
         temp[tag] = readable_data
-        # decode bytes
 
-    #print(f"searching for fields {desired_fields}")
-    #print(f"existing fields {list(temp.keys())}")
+    # print(f"searching for fields {desired_fields}")
+    # print(f"existing fields {list(temp.keys())}")
+
     # insert conditional to print only fields in file from list to dictionary
     # reversed logic
     for tag in desired_fields:
         if tag in temp.keys():
             jpeg_parsed[tag] = temp[tag]
 
-    #print("dictionary:", jpeg_parsed)
-    #print(f"found {len(jpeg_parsed)} fields out of {len(desired_fields)}")
+    # print("dictionary:", jpeg_parsed)
+    # print(f"found {len(jpeg_parsed)} fields out of {len(desired_fields)}")
 
-    return print(jpeg_parsed)
+    json_object = json.dumps(jpeg_parsed, indent=4)
+    # print(json_object)
 
-# if __name__ == "__main__":
-#     print(argv)
-#     result = parse_jpeg_from_path(argv[1])
-#     print(result)
+    return json_object
 
-parse_jpeg_from_path(argv[1])
+
+if __name__ == "__main__":
+    result = parse_jpeg_from_path(argv[1])
+    print(result)
