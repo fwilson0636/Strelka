@@ -24,7 +24,6 @@ def parse_jpeg_from_path(path: str) -> dict:
         # begins the process of reading and parsing metadata
         image = Image.open(path)
         exifdata = image._getexif()
-        print("I am here")
         jpeg_data = parse_jpeg_from_data(exifdata)
     except OSError as ose:
         print("Found OSError", ose)
@@ -138,27 +137,32 @@ def parse_jpeg_from_data(data: bytes) -> dict:
 def serialize_jpeg_data(unserialized_data: dict) -> dict:
     """
         This function takes in a dictionary of jpeg data and checks if the key and value pairs are 
-        an acceptable data types to be converted to json. If they are not, they are serialized(converted to strings).
+        acceptable data types to be converted to json. If they are not, they are serialized(converted to strings).
         The serialized dictionary is returned.
 
     """
-    # TODO : check if correct data type is passed in
-    serialized_data = dict()
-    valid_key_types = str
-    valid_value_types = tuple([str,dict,bool,int,float,list])
-    for k,v in unserialized_data.items() :
-        new_key = k
-        new_value = v
-        if not isinstance(k,valid_key_types) :
-            new_key = str(k)
-        if isinstance(v,bytes) :
-            new_value = v.decode("utf-8")
-        if not isinstance(v, valid_value_types) or v is None :
-            new_value = str(v)
-        if isinstance(v,dict) :
-            new_value = serialize_jpeg_data(v)
-        serialized_data[new_key] = new_value
-    return serialized_data
+    # TODO : check if each value can be an int or float, if so parse 
+    # TODO : check if the field we are looking for is the correct data type
+    if isinstance(unserialized_data, dict) :
+        serialized_data = dict()
+        valid_key_types = str
+        valid_value_types = tuple([str,dict,bool,int,float,list])
+        for k,v in unserialized_data.items() :
+            new_key = k
+            new_value = v
+            if not isinstance(k,valid_key_types) :
+                new_key = str(k)
+            if isinstance(v,bytes) :
+                new_value = v.decode("utf-8")
+            if not isinstance(v, valid_value_types) or v is None :
+                new_value = str(v)
+            if isinstance(v,dict) :
+                new_value = serialize_jpeg_data(v)
+            serialized_data[new_key] = new_value
+        return serialized_data
+    else :
+        print("Expected a dictionary type,", type(unserialized_data), "was received.")
+        return dict()
     
 
 if __name__ == "__main__":
