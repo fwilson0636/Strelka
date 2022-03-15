@@ -1,2 +1,6 @@
+fastapi~=0.74.1
+jinja2
+gunicorn
+uvicorn
 pefile
 pillow
