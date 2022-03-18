@@ -147,6 +147,7 @@ def parse_jpeg_from_data(data: bytes) -> dict:
         "ImageNumber",
         "LensMake"
     ]
+    
 
     # Pseudo code procedure
     # 1. Validate data is JPEG data
@@ -214,6 +215,8 @@ def parse_jpeg_from_data(data: bytes) -> dict:
     # print(f"found {len(jpeg_parsed)} fields out of {len(desired_fields)}")
     jpeg_parsed = serialize_jpeg_data(jpeg_parsed)
     
+    fields_validated = validate_fields(jpeg_parsed)
+    
     json_object = json.dumps(jpeg_parsed, indent=4)
     # print(json_object)
 
@@ -226,8 +229,7 @@ def serialize_jpeg_data(unserialized_data: dict) -> dict:
         The serialized dictionary is returned.
 
     """
-    # TODO : check if each value can be an int or float, if so parse 
-    # TODO : check if the field we are looking for is the correct data type
+            
     if isinstance(unserialized_data, dict) :
         serialized_data = dict()
         valid_key_types = str
@@ -249,6 +251,119 @@ def serialize_jpeg_data(unserialized_data: dict) -> dict:
         print("Expected a dictionary type,", type(unserialized_data), "was received.")
         return dict()
     
+
+def validate_fields(serialized_data: dict, additional_fields: dict = dict()):
+    """
+            This function takes in serialized data as a dictionary and validates that each data field (key)
+            has a value of the desired data type. If the type is not correct we cast it to the correct type.
+            If the value is not parseable to the correct data type then we delete that field from the
+            dictionary completely. We return the validated fields.
+
+        """
+    dict_desired_fields = {
+        "gpsinfo": dict,
+        "exifimageheight": int,
+        "exifimagewidth": int,
+        "exifversion": str,
+        "make": str,
+        "model": str,
+        "software": str,
+        "usercomment": str,
+        "datetime": str,
+        "securityclassification": str,
+        "expandsoftware": str,
+        "saturation": int,
+        "imagehistory": str,
+        "imagenumber": int,
+        "pressure": str,
+        "flashenergy": str,
+        "noise": str,
+        "imagenumber": int,
+        "lensmake": str
+    }
+
+    dict_desired_fields.update(additional_fields)
+
+    # TODO : check if each value can be an int or float, if so parse
+    # assigning types in dictionary takes care of this
+    # TODO : check if the field we are looking for is the correct data type
+    # possibly compare the k,v (type of v) in unserialized_data to the k,v in dict_desired_fields
+    validated_data = dict()
+    
+    """ validate based on desired fields """
+    # loop through desired fields
+    # check to see if the key in serialized data
+    # if not, skip field
+    # if so, check that the value of desired fields matches the type of the value in serialized data
+    # if not, try to cast the value to the correct type
+    # else if it is correct, pass
+    # if it can't be done, delete field from dictionary
+    
+    for k,v in dict_desired_fields.items():
+        
+        if k in serialized_data.keys():
+            if not isinstance(serialized_data.get(k),v):
+                try:
+                    new_value = v(serialized_data.get(k))
+                except:
+                    del serialized_data[k]
+                else:
+                    validated_data[k] = new_value
+            else:
+                validated_data[k] = serialized_data.get(k)
+            print("For key ", k, "serialized data type: ", 
+                     type(serialized_data.get(k)), " desired type: ", v)
+        else:
+            # no validation needs to be done because the field doesnt exist
+            pass
+    
+    """ validate based on serialized data """
+    # loop through serialized data
+    # check to see if serialized data is in desired fields
+    # if not, delete the field
+    # if so, check that the value of desired fields matches the type of the value in serialized data
+    # if not, try to cast the value to the correct type
+    # else if it is correct, pass
+    # if it can't be done, delete field from dictionary
+    
+    # for k, v in serialized_data.items():
+    #      new_value = v
+    #      # if the value of the iteration is a string
+    #      if isinstance(v, str):
+    #        print("Here is ", k)
+    #        print("For key ", k, "serialized data type: ", 
+    #              type(serialized_data.get(v)), " desired type: ", dict_desired_fields.get(k))
+           
+    #        #if the type of the value doesnt equal the type specified in desired fields
+    #        if not isinstance(serialized_data.get(v), dict_desired_fields.get(k)) :
+               
+    #            # try to cast the values to a string
+    #             try:
+    #                 new_value = str(v)
+                    
+    #             # if you cant cast to proper type, delete from dictionary
+    #             except Exception:
+    #                 print("The data for ", k,
+    #                           "could not be converted to a string")
+    #                 del serialized_data[k]
+                    
+    #      elif isinstance(v, int):
+    #          print("For key ", k,"serialized data type: ", 
+    #                type(serialized_data.get(v)), " desired type: ", dict_desired_fields.get(k))
+    #          if type(serialized_data.get(v)) != dict_desired_fields.get(k):
+    #               try:
+    #                   new_value = int(v)
+    #               except Exception:
+    #                   print("The data for ", k,
+    #                             "could not be converted to an int")
+    #                   del serialized_data[k]
+    #      elif isinstance(v, dict):
+    #          pass
+    #      else:
+    #          pass
+    #          # del serialized_data[k]
+    #      validated_data[k] = new_value
+    print(validated_data)
 
 if __name__ == "__main__":
     result = parse_jpeg_from_path(argv[1])
