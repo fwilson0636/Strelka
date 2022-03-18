@@ -1,8 +1,11 @@
+import logging
 from sys import argv
-from PIL import Image
+#from PIL import Image
+from exif import Image
 from PIL.ExifTags import TAGS
 from strelka.strelka import Scanner
 import json
+
 
 
 def parse_jpeg_from_path(path: str) -> dict:
@@ -22,14 +25,23 @@ def parse_jpeg_from_path(path: str) -> dict:
 
     try:
         # begins the process of reading and parsing metadata
+        with open(path, 'rb') as image_file:
+            image = Image(image_file)
+        #exifdata = image._getexif()
+        print("I am here")
+        jpeg_data = parse_jpeg_from_data_using_exif(image)
+        coords = image_coordinates(image)
+        if coords:
+            jpeg_data["gps_coords"] = coords
         image = Image.open(path)
         exifdata = image._getexif()
         jpeg_data = parse_jpeg_from_data(exifdata)
+
     except OSError as ose:
         print("Found OSError", ose)
         jpeg_scanner.tags.append("File does not exist")
     except Exception as e:
-        print("Found exception", e)
+        logging.exception("Found exception")
         jpeg_scanner.tags.append(e)
     else:
         print("Success")
@@ -39,6 +51,73 @@ def parse_jpeg_from_path(path: str) -> dict:
     # print("Scanner errors:", jpeg_scanner.tags)
     return jpeg_data
 
+def decimal_coords(coords, ref):
+ decimal_degrees = coords[0] + coords[1] / 60 + coords[2] / 3600
+ if ref == "S" or ref == "W":
+     decimal_degrees = -decimal_degrees
+ return decimal_degrees
+
+def image_coordinates(img):
+
+    if img.has_exif:
+        try:
+            coords = (decimal_coords(img.gps_latitude,
+                      img.gps_latitude_ref),
+                      decimal_coords(img.gps_longitude,
+                      img.gps_longitude_ref))
+            return coords
+        except AttributeError:
+            print('No Coordinates')
+    else:
+        print ('The Image has no EXIF information')
+
+def parse_jpeg_from_data_using_exif(image:bytes) -> dict:
+    # fields are currently case sensitive
+    desired_fields = [
+        "GPSInfo",
+        "ExifImageHeight",
+        "ExifImageWidth",
+        "ExifVersion",
+        "Make",
+        "Model",
+        "Software",
+        "UserComment",
+        "DateTime",
+        "SecurityClassification",
+        "ExpandSoftware",
+        "Saturation",
+        "ImageHistory",
+        "ImageNumber",
+        "Pressure",
+        "FlashEnergy",
+        "Noise",
+        "ImageNumber",
+        "LensMake"
+    ]
+    image_data = dict()
+    jpeg_parsed = dict()
+    if image.has_exif:
+        for field in image.list_all():
+            try:
+                image_data[field] = str(image.__getattr__(field))
+            except Exception as e:
+                image_data[field] = str(e)
+
+            # insert conditional to print only fields in file from list to dictionary
+            # reversed logic
+        field_count = 0
+        for tag in desired_fields:
+            # convert desired fields to lowercase
+            tag = tag.lower()
+            if tag in image_data.keys():
+                jpeg_parsed[tag] = image_data[tag]
+                field_count = field_count + 1
+            if field_count == 0:
+                print("This may be a malicious image file")
+            else:
+                print("The field (", tag, ") is not available for this jpeg.")
+
+    return jpeg_parsed
 
 def parse_jpeg_from_data(data: bytes) -> dict:
     """
@@ -98,8 +177,14 @@ def parse_jpeg_from_data(data: bytes) -> dict:
    
     
     # convert all keys (exifdata fields) to lowercase
-    temp = {k.lower(): v for k, v in temp.items()}
-    
+    #temp = {if isinstance(k,str) k.lower() else str(): v for k, v in temp.items() }
+    temp_dict = dict()
+
+    for k,v in temp.items():
+        if isinstance(k,str):
+            k=k.lower()
+        temp_dict[k] = v
+    temp = temp_dict
     field_count = 0
     
     # insert conditional to print only fields in file from list to dictionary
@@ -135,7 +220,7 @@ def parse_jpeg_from_data(data: bytes) -> dict:
     json_object = json.dumps(jpeg_parsed, indent=4)
     # print(json_object)
 
-    return json_object
+    return jpeg_parsed
 
 def serialize_jpeg_data(unserialized_data: dict) -> dict:
     """
