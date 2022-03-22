@@ -41,7 +41,7 @@ async def create_upload_file(my_file: UploadFile):
     if not my_file:
         return {"message":"no file sent to upload file"}
     else:
-        info = parse_jpeg_from_path(my_file.filename)
+        info, errors = parse_jpeg_from_path(my_file.filename)
         # with open(my_file.filename,'rb') as image_file:
         #     with open("my_image.jpeg",'w+') as my_image_file:
         #         my_image_file.write()
@@ -50,7 +50,12 @@ async def create_upload_file(my_file: UploadFile):
         <img src = \"my_image.jpeg\">
         </body>
         """
-        return JSONResponse({"filename": my_file.filename, "data":info})
+        if errors:
+            response = {"filename": my_file.filename, "data":info, "errors": errors}
+            del errors
+            return JSONResponse(response)
+        else:
+            return JSONResponse({"filename": my_file.filename, "data": info})
         #return HTMLResponse(content=content)
 
 @app.post("/files/")

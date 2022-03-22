@@ -13,21 +13,26 @@
 
 <body>
 <h2>JPEG Image File Metadata </h2>
-<table class="table table-striped" style= "margin-top:10px; margin-left:10px;">>
-    <thead>
-        <tr>
-          <th> Successfully Extracted Metadata Fields </th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for jpeg_element, jpeg_value in jpeg.items() %}
-        <tr>
-            <td>{{ jpeg_element }}</td>
-            <td>{{ jpeg_value }}</td>
-        </tr>
-    {% endfor %}
-     </tbody>
-</table>
+<!--<table class="table table-striped" style= "margin-top:10px; margin-left:10px;">>-->
+<!--    <thead>-->
+<!--        <tr>-->
+<!--          <th> Successfully Extracted Metadata Fields </th>-->
+<!--        </tr>-->
+<!--    </thead>-->
+<!--    <tbody>-->
+<!--    {% for jpeg_element, jpeg_value in jpeg.items() %}-->
+<!--        <tr>-->
+<!--            <td>{{ jpeg_element }}</td>-->
+<!--            <td>{{ jpeg_value }}</td>-->
+<!--        </tr>-->
+<!--    {% endfor %}-->
+<!--     </tbody>-->
+<!--</table>-->
+
+
+
+
+
 <form action="/uploadfile/" enctype="multipart/form-data" method="post">
     <input name="my_file" type="file">
     <input type="submit">
