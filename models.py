@@ -22,7 +22,8 @@ def parse_jpeg_from_path(path: str) -> dict:
     # 5. Return results of function call
     jpeg_scanner = Scanner()
     jpeg_data = dict()
-
+    errors = None
+    coords = None
     try:
         # begins the process of reading and parsing metadata
         with open(path, 'rb') as image_file:
@@ -30,26 +31,31 @@ def parse_jpeg_from_path(path: str) -> dict:
         #exifdata = image._getexif()
         print("I am here")
         jpeg_data = parse_jpeg_from_data_using_exif(image)
-        coords = image_coordinates(image)
+        if image.has_exif:
+            coords = image_coordinates(image)
+        else:
+            errors = "Image has no exif information"
         if coords:
             jpeg_data["gps_coords"] = coords
-        image = Image.open(path)
-        exifdata = image._getexif()
-        jpeg_data = parse_jpeg_from_data(exifdata)
+        # image = Image.open(path)
+        # exifdata = image._getexif()
+        #jpeg_data = parse_jpeg_from_data(exifdata)
 
     except OSError as ose:
         print("Found OSError", ose)
         jpeg_scanner.tags.append("File does not exist")
+        errors = str(ose)
     except Exception as e:
         logging.exception("Found exception")
         jpeg_scanner.tags.append(e)
+        errors = str(e)
     else:
         print("Success")
     finally:
         print("Completed")
 
     # print("Scanner errors:", jpeg_scanner.tags)
-    return jpeg_data
+    return jpeg_data, errors
 
 def decimal_coords(coords, ref):
  decimal_degrees = coords[0] + coords[1] / 60 + coords[2] / 3600
@@ -59,17 +65,15 @@ def decimal_coords(coords, ref):
 
 def image_coordinates(img):
 
-    if img.has_exif:
-        try:
-            coords = (decimal_coords(img.gps_latitude,
-                      img.gps_latitude_ref),
-                      decimal_coords(img.gps_longitude,
-                      img.gps_longitude_ref))
-            return coords
-        except AttributeError:
-            print('No Coordinates')
-    else:
-        print ('The Image has no EXIF information')
+    try:
+        coords = (decimal_coords(img.gps_latitude,
+                  img.gps_latitude_ref),
+                  decimal_coords(img.gps_longitude,
+                  img.gps_longitude_ref))
+        return coords
+    except AttributeError:
+        print('No Coordinates')
+
 
 def parse_jpeg_from_data_using_exif(image:bytes) -> dict:
     # fields are currently case sensitive
