@@ -8,7 +8,7 @@ import json
 
 
 
-def parse_jpeg_from_path(path: str) -> dict:
+def parse_jpeg_from_path(image_file) -> dict:
     """
     This function will take the path of a JPEG image file as input and produce a dictionary from the requested list of metadata fields.
     :param path:this is the path to the image file used
@@ -26,8 +26,8 @@ def parse_jpeg_from_path(path: str) -> dict:
     coords = None
     try:
         # begins the process of reading and parsing metadata
-        with open(path, 'rb') as image_file:
-            image = Image(image_file)
+       # with open(path, 'rb') as image_file:
+        image = Image(image_file)
         #exifdata = image._getexif()
         print("I am here")
         jpeg_data = parse_jpeg_from_data_using_exif(image)
