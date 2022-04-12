@@ -32,8 +32,10 @@
 
 
 
-
-<form action="/uploadfile/" enctype="multipart/form-data" method="post">
+<p>Select the JPEG image from your local machine that needs to be analyzed.
+    The scanner will produce the available metadata and any errors the image may have while being parsed.
+    Selecting submit confirms your selected JPEG image file and will initiate the scanning.</p>
+<form action="/uploadfile/" enctype="multipart/form-data" method="post" onsubmit="myFunction()" id="submit">
     <input name="my_file" type="file">
     <input type="submit">
 </form>

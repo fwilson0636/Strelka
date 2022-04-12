@@ -8,6 +8,7 @@ import tempfile
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse, HTMLResponse, FileResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 from fastapi import FastAPI,File ,UploadFile
 
 from models import parse_jpeg_from_path
@@ -17,8 +18,8 @@ templates = Jinja2Templates(directory="templates")
 logging.basicConfig(level=logging.INFO)
 logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 
-some_file_path = "files/testimage1.jpg"
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="files"), name="static")
 
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
@@ -37,28 +38,29 @@ def home(request: Request):
 @app.post("/uploadfile/", response_class=HTMLResponse)
 async def create_upload_file(my_file: UploadFile, request: Request):
     print("we made it", my_file)
+    
+    #contents = await my_file.read()
 
     if not my_file:
         return {"message":"no file sent to upload file"}
     else:
         info, errors = parse_jpeg_from_path(my_file.file)
-        # with open(my_file.filename,'rb') as image_file:
-        #     with open("my_image.jpeg",'w+') as my_image_file:
-        #         my_image_file.write()
-        content = """
-        <body>
-        <img src = \"my_image.jpeg\">
-        </body>
-        """
+        # with open(f"templates/{my_file.filename}",'w+') as image_file:
+        #      #with open("my_image.jpeg",'w+') as my_image_file:
+        #      image_file.write(str(my_file.file.read()))
+
         if errors:
             response = {"filename": my_file.filename, "data":info, "errors": errors}
             del errors
             return JSONResponse(response)
         else:
             # return JSONResponse({"filename": my_file.filename, "data": info})
-            return templates.TemplateResponse("results.html", {"request": request, "jpeg": info})
+            return templates.TemplateResponse("results.html", {"request": request, "jpeg": info, "img": my_file})
+            #return FileResponse(my_file)
 
-        #return HTMLResponse(content=content)
+    #return HTMLResponse(content=content)
+    #return FileResponse(f'./Strelka/files/{my_file}')
+    #return FileResponse(my_file.filename)
 
 @app.post("/files/")
 async def create_file(file: bytes or None = File(None)):
