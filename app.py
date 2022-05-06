@@ -1,9 +1,5 @@
 import logging
-import os
 import sys
-import tempfile
-#from urllib.parse import urlparse
-#from models import parse_jpeg_from_data
 
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse, HTMLResponse, FileResponse, JSONResponse

@@ -1,6 +1,7 @@
-fastapi~=0.74.1
-jinja2
-gunicorn
+exif
+fastapi==0.76.0
+Pillow==9.1.0
+# Server libraries
 uvicorn
-pefile
-pillow
+jinja2
+python-multipart
