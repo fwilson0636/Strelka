@@ -1,6 +1,5 @@
 import logging
 from sys import argv
-#from PIL import Image
 from exif import Image
 from PIL.ExifTags import TAGS
 from strelka.strelka import Scanner
